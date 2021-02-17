@@ -35,8 +35,8 @@ const api = new Map<string, DatasourceApi>();
 export default api;
 
 api.set('bitbucket-tags', bitbucketTags);
-api.set('cdnjs', cdnjs);
-api.set('clojure', clojure);
+api.set('cdnjs', new cdnjs.CdnJs());
+api.set('clojure', new clojure.Clojure());
 api.set('crate', crate);
 api.set('dart', dart);
 api.set('docker', docker);

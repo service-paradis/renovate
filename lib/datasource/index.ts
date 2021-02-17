@@ -9,6 +9,8 @@ import { clone } from '../util/clone';
 import { regEx } from '../util/regex';
 import * as allVersioning from '../versioning';
 import datasources from './api';
+import { CdnJs } from './cdnjs';
+import { Clojure } from './clojure';
 import { addMetaData } from './metadata';
 import type {
   DatasourceApi,
@@ -27,7 +29,10 @@ export const getDatasourceList = (): string[] => Array.from(datasources.keys());
 
 const cacheNamespace = 'datasource-releases';
 
-function load(datasource: string): DatasourceApi {
+datasources.set('cdnjs', new CdnJs());
+datasources.set('clojure', new Clojure());
+
+function getDatasourceFor(datasource: string): DatasourceApi {
   return datasources.get(datasource);
 }
 
@@ -192,7 +197,7 @@ function resolveRegistryUrls(
 }
 
 export function getDefaultVersioning(datasourceName: string): string {
-  const datasource = load(datasourceName);
+  const datasource = getDatasourceFor(datasourceName);
   return datasource.defaultVersioning || 'semver';
 }
 
@@ -200,11 +205,11 @@ async function fetchReleases(
   config: GetReleasesInternalConfig
 ): Promise<ReleaseResult | null> {
   const { datasource: datasourceName } = config;
-  if (!datasourceName || !datasources.has(datasourceName)) {
+  if (!datasourceName || getDatasourceFor(datasourceName) === undefined) {
     logger.warn('Unknown datasource: ' + datasourceName);
     return null;
   }
-  const datasource = load(datasourceName);
+  const datasource = getDatasourceFor(datasourceName);
   const registryUrls = resolveRegistryUrls(datasource, config.registryUrls);
   let dep: ReleaseResult = null;
   const registryStrategy = datasource.registryStrategy || 'hunt';
@@ -346,14 +351,14 @@ export async function getPkgReleases(
 }
 
 export function supportsDigests(config: DigestConfig): boolean {
-  return 'getDigest' in load(config.datasource);
+  return 'getDigest' in getDatasourceFor(config.datasource);
 }
 
 export function getDigest(
   config: DigestConfig,
   value?: string
 ): Promise<string | null> {
-  const datasource = load(config.datasource);
+  const datasource = getDatasourceFor(config.datasource);
   const lookupName = config.lookupName || config.depName;
   const registryUrls = resolveRegistryUrls(datasource, config.registryUrls);
   return datasource.getDigest(
@@ -365,7 +370,7 @@ export function getDigest(
 export function getDefaultConfig(
   datasource: string
 ): Promise<Record<string, unknown>> {
-  const loadedDatasource = load(datasource);
+  const loadedDatasource = getDatasourceFor(datasource);
   return Promise.resolve<Record<string, unknown>>(
     loadedDatasource?.defaultConfig || Object.create({})
   );

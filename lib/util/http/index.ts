@@ -47,6 +47,10 @@ export interface HttpResponse<T = string> {
   authorization?: boolean;
 }
 
+export interface HttpError extends Error {
+  statusCode: number;
+}
+
 function cloneResponse<T>(response: any): HttpResponse<T> {
   // clone body and headers so that the cached result doesn't get accidentally mutated
   return {
