@@ -1,4 +1,5 @@
 import url from 'url';
+import { RequestError } from 'got';
 import { HOST_DISABLED } from '../../constants/error-messages';
 import { logger } from '../../logger';
 import { ExternalHostError } from '../../types/errors/external-host-error';
@@ -74,10 +75,18 @@ export async function downloadHttpProtocol(
       // istanbul ignore next
       logger.debug({ failedUrl }, `Cannot connect to ${hostType} host`);
     } else if (isPermissionsIssue(err)) {
-      logger.debug(
-        { failedUrl },
-        'Dependency lookup unauthorized. Please add authentication with a hostRule'
-      );
+      // istanbul ignore if
+      if (err instanceof RequestError && err.response?.headers?.authorization) {
+        logger.debug(
+          { failedUrl },
+          'An authorization header was sent but the request was still rejected as unauthorized. Please review your hostRules'
+        );
+      } else {
+        logger.debug(
+          { failedUrl },
+          'Dependency lookup unauthorized. Please add authentication with a hostRule'
+        );
+      }
     } else if (isTemporalError(err)) {
       logger.debug({ failedUrl, err }, 'Temporary error');
       if (isMavenCentral(pkgUrl)) {
