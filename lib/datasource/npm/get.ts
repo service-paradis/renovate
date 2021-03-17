@@ -76,7 +76,10 @@ export async function getDependency(
     return JSON.parse(memcache[packageName]) as NpmDependency;
   }
 
-  const scope = packageName.split('/')[0];
+  let scope: string;
+  if (packageName.startsWith('@')) {
+    scope = packageName.split('/')[0];
+  }
   let regUrl: string;
   const npmrc = getNpmrc();
   try {
