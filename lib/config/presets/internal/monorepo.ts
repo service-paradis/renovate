@@ -302,6 +302,7 @@ const patternGroups = {
   embroider: '^@embroider/',
   fullcalendar: '^@fullcalendar/',
   hotchocolate: '^HotChocolate\\.',
+  'iconify-font-awesome': '^@iconify-json/fa-',
   spfx: ['^@microsoft/sp-', '^@microsoft/eslint-.+-spfx$'],
   spock: '^org\\.spockframework:spock-',
   'syncfusion-dotnet': '^Syncfusion\\.',
